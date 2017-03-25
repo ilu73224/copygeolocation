@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
             if(0 == scheme.compareTo("google.navigation")){
                 String q = u.getSchemeSpecificPart();
                 String location = q.substring(q.indexOf("q=")+2, q.indexOf("&"));
-                t.setText("location = " + location);
+                t.setText(location);
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText("location",location);
                 clipboard.setPrimaryClip(clip);
@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
                 String lat = q.substring(q.indexOf("lat=")+4, q.indexOf("&lng="));
                 String lng = q.substring(q.indexOf("lng=")+4, q.indexOf("&g="));
                 String location = String.format("%s,%s", lat, lng);
-                t.setText("location = " + location);
+                t.setText(location);
                 ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
                 ClipData clip = ClipData.newPlainText("location",location);
                 clipboard.setPrimaryClip(clip);
@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             public void run() {
-                finish();
+                finishAndRemoveTask();
             }
         }, 1500);
     }
