@@ -8,9 +8,16 @@ import android.net.Uri;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TextView;
 
+import java.util.regex.Matcher;
+
+import static android.util.Patterns.WEB_URL;
+
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "copygeolocation";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,28 +28,37 @@ public class MainActivity extends AppCompatActivity {
         String action = intent.getAction();
         if(0 == action.compareTo("android.intent.action.MAIN")){
             t.setText( intent.toString() );
-        }else {
+        } else {
+            boolean bGetlocation = false;
             Uri u = intent.getData();
+            Log.d(TAG, "u = " + u);
             String scheme = u.getScheme();
+            String q = u.getSchemeSpecificPart();
+            Log.d(TAG, "q = " + q);
+            String location = "";
             if(0 == scheme.compareTo("google.navigation")){
-                String q = u.getSchemeSpecificPart();
-                String location = q.substring(q.indexOf("q=")+2, q.indexOf("&"));
-                t.setText(location);
-                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("location",location);
-                clipboard.setPrimaryClip(clip);
+                location = q.substring(q.indexOf("q=")+2, q.indexOf("&"));
+                bGetlocation = true;
             }else if(0 == scheme.compareTo("line")){
-                String q = u.getSchemeSpecificPart();
-                //https://pkget.com/?25.0564439002806&lng=121.5483734035&g=2
-                String lat = q.substring(q.indexOf("lat=")+4, q.indexOf("&lng="));
-                String lng = q.substring(q.indexOf("lng=")+4, q.indexOf("&g="));
-                String location = String.format("%s,%s", lat, lng);
-                t.setText(location);
-                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("location",location);
-                clipboard.setPrimaryClip(clip);
+                Matcher m = WEB_URL.matcher(q);
+                boolean result = m.find();
+                if(result) {
+                    String url=m.group(1);
+                    Uri uu = Uri.parse(url);
+                    location = String.format("%s,%s", uu.getQueryParameter("lat"), uu.getQueryParameter("lng"));
+                    bGetlocation = true;
+                }else{
+                    t.setText(q);
+                }
             }else{
                 t.setText( intent.toString() );
+            }
+            if(bGetlocation) {
+                Log.d(TAG, "location = " + location);
+                t.setText(location);
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("location",location);
+                clipboard.setPrimaryClip(clip);
             }
         }
         Handler handler = new Handler();
